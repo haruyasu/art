@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<title>Art</title>
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+		}
+		canvas {
+			vertical-align: bottom;
+		}
+		#container {
+			text-align: center;
+		}
+		#mycanvas {
+			background: #eee;
+			cursor: crosshair;
+		}
+	</style>
+</head>
+<body>
+	<div id="container">
+		<canvas id="mycanvas" width="100" height="100"></canvas>
+	</div>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+	<script>
+		$(function () {
+
+			sizing();
+			function sizing() {
+				$("#mycanvas").get(0).width = $(window).width();
+				$("#mycanvas").get(0).height = $(window).height();
+			}
+
+			var ctx,
+				balls = [];
+
+			var canvas = document.getElementById("mycanvas");
+			ctx = canvas.getContext("2d");
+
+			var Ball = function(x, y ,r) {
+				this.x = x;
+				this.y = y;
+				this.r = r;
+				this.vx = rand(-10, 10);
+				this.vy = rand(-10, 10);
+				this.color = "rgba(" +
+							rand(200, 255) + "," +
+							rand(200, 255) + "," +
+							rand(200, 255) + "," +
+							Math.random() +
+							")";
+				this.draw = function() {
+					ctx.beginPath();
+					ctx.arc(this.x, this.y, this.r, 0 , Math.PI*2);
+					ctx.fillStyle = this.color;
+					ctx.closePath();
+					ctx.fill();
+				};
+				this.move = function () {
+					if (this.x + this.r > canvas.width || this.x - this.r < 0) {
+						this.vx = -this.vx;
+					}
+					if (this.y + this.r > canvas.height || this.y - this.r < 0) {
+						this.vy = -this.vy;
+					}
+					this.x +=this.vx;
+					this.y +=this.vy;
+				}
+			};
+
+			function rand(min, max) {
+				return Math.floor(Math.random() * (max - min + 1)) + min;
+			}
+
+			$("#mycanvas").click(function (e) {
+				var x = e.pageX - $(this).offset().left,
+					y = e.pageY - $(this).offset().top,
+					r = rand(20, 60);
+				x = adjustPas(x, r, canvas.width);
+				y = adjustPas(y, r, canvas.height);
+				balls.push(new Ball(x, y ,r));
+			});
+
+			function adjustPas(pos, r, max) {
+				if (pos - r < 0) {
+					return r;
+				}
+				else if (pos + r > max){
+					return max - r;
+				}
+				else {
+					return pos;
+				}
+			}
+
+			function viewtext() {
+				ctx.font = "20px bold 'Arial'";
+				ctx.fillStyle = "green";
+				ctx.fillText("フィールドをクリックして下さい", 30 ,40);
+			}
+
+			function clearStage() {
+				ctx.fillStyle = "#eee";
+				ctx.fillRect(0, 0, canvas.width, canvas.height);
+			}
+
+			function update() {
+				clearStage();
+				viewtext();
+				for (var i = 0; i < balls.length; i++) {
+					balls[i].draw();
+					balls[i].move();
+				}
+				setTimeout(function () {
+					update();
+				}, 30);
+			}
+
+			update();
+
+			window.addEventListener( 'resize', function() {
+				sizing();
+			}, false );
+		});
+	</script>
+</body>
+</html>
